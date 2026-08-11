@@ -25,11 +25,15 @@ import {
 beforeEach(() => __resetBudget());
 
 describe("the budget is a real fraction of the vendor's", () => {
-  it("stays well under the documented tenant limit", () => {
-    // 300/min, enforced as 25 per 5s sliding window. Taking the whole thing
-    // would leave production nothing.
-    expect(VENDOR_LIMIT_PER_WINDOW).toBe(25);
-    expect(VENDOR_WINDOW_MS).toBe(5_000);
+  it("stays well under the vendor's documented limit", () => {
+    // Deliberately a RELATIONSHIP, not two magic numbers. An earlier version of
+    // this file asserted the exact figures of the vendor it was extracted from
+    // (25 per 5s), which meant the very first thing a new plane does — set its
+    // own vendor's real limit in step 4 — broke its own test suite. A template
+    // whose tests fail when you follow its setup instructions is worse than one
+    // with no tests.
+    expect(VENDOR_LIMIT_PER_WINDOW).toBeGreaterThan(0);
+    expect(VENDOR_WINDOW_MS).toBeGreaterThan(0);
     expect(PLANE_LIMIT_PER_WINDOW).toBeLessThanOrEqual(VENDOR_LIMIT_PER_WINDOW / 4);
   });
 

@@ -23,6 +23,18 @@ import { getObservedSql } from "./client";
  *      only borrow one that already exists.
  */
 
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * FILL IN: the table and columns below are the shape of ONE production system's
+ * token storage. Yours will differ — a different table name, a different key,
+ * possibly a single row with no entity dimension at all.
+ *
+ * What must NOT change is the property: this reads a token the production
+ * integration already holds, rather than obtaining one of its own. See
+ * README.md, "Borrow every credential, issue none".
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
 export interface ObservedSource {
   /** The observed system's entity id. */
   id: string;

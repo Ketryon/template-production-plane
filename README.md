@@ -29,8 +29,10 @@ observed system.
 | 2 | `lib/http.ts` | `SIDE_EFFECTING_SEGMENTS` — **the most consequential edit here** |
 | 3 | `lib/auth.ts` | `ADMIN_TABLE` / `ADMIN_COLUMN` for the observed system's own admin flag |
 | 4 | `lib/rate-budget.ts` | The vendor's documented limit, and your fraction of it |
-| 5 | `migrations/observed/` | Which tables the read-only role may see |
-| 6 | `docs/standard.md` | Score the table. Every rule starts at `—` |
+| 5 | `lib/observed/sources.ts` | The table and columns holding the borrowed vendor token |
+| 6 | `lib/catalog.ts` | Your reads, each with a mandatory `note` |
+| 7 | `migrations/observed/` | Which tables the read-only role may see |
+| 8 | `docs/standard.md` | Score the table. Every rule starts at `—` |
 
 ```bash
 pnpm install
@@ -55,7 +57,7 @@ it.
   render. Neither alone is sufficient.
 - **`lib/http.ts`** — the guard. Its *list* is yours; its *shape* is not.
 
-## The four ideas
+## The five ideas
 
 **Borrow every credential, issue none.** Identity from the observed system's
 auth, data access from a `SELECT`-only role, vendor auth from the token the
@@ -65,6 +67,13 @@ deprovision and one more to forget.
 **Enforce read-only where this app cannot edit it.** A read-only flag in code is
 a comment; a database role without `INSERT` is a boundary. The difference is the
 feature someone adds in six months without reading your header.
+
+**Write down what the vendor really does.** `lib/catalog.ts` holds every read as
+data, each with a *mandatory* `note` field — for behaviour the documentation
+omits and you only learn by having something go wrong. A plane with only a
+free-form console is a `curl` wrapper with a login; the notes are what make it
+worth keeping. `note` is a required string rather than an optional one so that
+leaving it out is a compile error.
 
 **Make the write unexpressible, not blocked.** `app/api/call/route.ts` takes a
 source and a path. No method parameter, no body. There is no flag to flip and no
@@ -95,8 +104,11 @@ suspicion, and put deployment protection in front of a guessable URL.
 
 ## What this deliberately does not include
 
-- **A UI.** `app/login` and `app/(app)/page.tsx` are stubs. The surfaces worth
-  building are per-plane; a half-styled one invites someone to keep it.
+- **A UI.** `app/login` and `app/(app)/page.tsx` are stubs, and nothing renders
+  `lib/catalog.ts` yet. The surfaces worth building are per-plane; a half-styled
+  one invites someone to keep it. `lib/http.ts` exports `toCurl`, and
+  `lib/rate-budget.ts` exports `windowUsage` and `estimateSeconds`, for whatever
+  you build — showing a run's cost *before* it starts is the part not to skip.
 - **Writes**, permanently.
 - **A migration runner.** `migrations/` is applied by hand and the repo is the
   ledger — see [`migrations/README.md`](migrations/README.md). For the observed
@@ -112,6 +124,7 @@ lib/
   http.ts              the path guard                            <- fill the list
   proxy.ts             the one executor every call goes through
   rate-budget.ts       this plane's share of the vendor's quota
+  catalog.ts           every read, as data, with a mandatory note
   store.ts             the call log, with retention
   observed/client.ts   read-only connection to the observed system
   observed/sources.ts  borrowing the vendor credential
