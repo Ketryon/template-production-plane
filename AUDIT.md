@@ -5,14 +5,20 @@ working plane. Everything listed here was verified against the code at the time
 of writing, not inferred. Items fixed in the same pass are recorded at the bottom
 so this reads as a history rather than a permanent backlog.
 
-**Health at time of audit:** 37 files, 1 689 lines of TypeScript, `pnpm verify`
-clean (typecheck + eslint + 79 tests), `next build` clean, app boots and fails
-closed unconfigured.
+**Health at time of audit:** 38 files, `pnpm verify` clean (typecheck + eslint +
+78 tests), `next build` clean, app boots and fails closed unconfigured, and the
+fill-in exercise passes when run as a second plane would.
 
 > **The cheapest smoke test for this template** is to delete one entry from
-> `SIDE_EFFECTING_SEGMENTS` in `lib/http.ts` and run `pnpm test`. It must fail
-> with 8 named failures. If it passes, the guard is no longer guarded — and the
-> guard is the one thing here whose failure is irreversible.
+> `SIDE_EFFECTING_SEGMENTS` in `lib/http.ts` and run `pnpm test`. It must fail on
+> *contains exactly the segments we have decided are unsafe*. If it passes, the
+> guard is no longer guarded — and the guard is the one thing here whose failure
+> is irreversible.
+>
+> **The real acceptance test** is larger and worth running whenever a fill-in
+> point changes: copy the repo, work through all eight fill-in points as a new
+> plane would, and confirm `pnpm verify` is still green. Reading the template
+> missed two defects that this caught immediately.
 
 ---
 
