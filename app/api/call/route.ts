@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callVendor, ReadOnlyError } from "@/lib/proxy";
+import { getPlaneUser } from "@/lib/auth";
 
 /**
  * POST /api/call — one the vendor read.
@@ -21,7 +22,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    return NextResponse.json(await callVendor({ sourceId: body.sourceId, path: body.path }));
+    // Middleware has established there IS a session; this resolves whose, so the
+    // call log can answer "by whom".
+    const user = await getPlaneUser();
+    return NextResponse.json(
+      await callVendor({
+        sourceId: body.sourceId,
+        path: body.path,
+        actor: user?.email ?? user?.id ?? null,
+      }),
+    );
   } catch (error) {
     // 403 rather than 423: this is not a lock that can be opened.
     if (error instanceof ReadOnlyError) {

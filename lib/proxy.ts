@@ -19,6 +19,15 @@ import { reserveSlot } from "./rate-budget";
 export interface CallInput {
   sourceId: string;
   path: string;
+  /**
+   * Who is asking. Threaded explicitly rather than read from ambient request
+   * state, so a call issued outside a request cannot silently log as nobody.
+   *
+   * A plane reads production personal data. "Was this accessed?" is answerable
+   * from the log without this; "by whom?" is the question that actually gets
+   * asked, and the one an accountability obligation expects an answer to.
+   */
+  actor?: string | null;
 }
 
 export interface CallResult {
@@ -162,6 +171,7 @@ export async function callVendor(input: CallInput): Promise<CallResult> {
   const durationMs = Date.now() - started;
 
   await recordCall({
+    actor: input.actor ?? null,
     sourceId: input.sourceId,
     method: "GET",
     path,

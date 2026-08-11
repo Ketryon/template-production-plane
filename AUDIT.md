@@ -24,6 +24,13 @@ fill-in exercise passes when run as a second plane would.
 
 ## Open — decisions, not defects
 
+### 0. No Content-Security-Policy
+
+`next.config.ts` sets OWASP's baseline minus CSP. A meaningful policy needs the
+real script and style sources of a UI this template does not have, and a wrong
+CSP breaks the page silently — shipping `default-src *` would look like
+protection while providing none. Write one alongside your first real UI.
+
 ### 1. Unused exports kept deliberately
 
 `toCurl`, `windowUsage`, `estimateSeconds` and `listSources` are exported and

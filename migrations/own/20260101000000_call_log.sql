@@ -10,6 +10,10 @@
 
 CREATE TABLE IF NOT EXISTS call_log (
   id            bigserial PRIMARY KEY,
+  -- WHO issued the call. Not optional in spirit: a log that answers "was this
+  -- read?" but not "by whom?" fails the question that actually gets asked, and
+  -- the one an accountability obligation expects an answer to.
+  actor         text,
   source_id     text,
   method        text NOT NULL,
   path          text NOT NULL,

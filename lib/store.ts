@@ -58,6 +58,7 @@ export function clipBody(value: string | null): string | null {
 
 export interface CallLogRow {
   id: number;
+  actor: string | null;
   source_id: string | null;
   method: string;
   path: string;
@@ -118,6 +119,7 @@ async function createSchema(db: postgres.Sql): Promise<void> {
   await db`
     CREATE TABLE IF NOT EXISTS call_log (
       id            bigserial PRIMARY KEY,
+      actor         text,
       source_id     text,
       method        text NOT NULL,
       path          text NOT NULL,
@@ -169,6 +171,8 @@ async function sweepExpired(db: postgres.Sql): Promise<void> {
 }
 
 export async function recordCall(entry: {
+  /** Who issued the call. Null only when there is genuinely no human behind it. */
+  actor?: string | null;
   sourceId: string | null;
   method: string;
   path: string;
@@ -183,8 +187,8 @@ export async function recordCall(entry: {
   try {
     await ensureSchema(db);
     await db`
-      INSERT INTO call_log (source_id, method, path, status, response_body, duration_ms, error)
-      VALUES (${entry.sourceId}, ${entry.method}, ${entry.path}, ${entry.status},
+      INSERT INTO call_log (actor, source_id, method, path, status, response_body, duration_ms, error)
+      VALUES (${entry.actor ?? null}, ${entry.sourceId}, ${entry.method}, ${entry.path}, ${entry.status},
               ${clipBody(entry.responseBody)}, ${entry.durationMs}, ${entry.error})
     `;
     // After the insert, never before: recording the call is the job, and
@@ -202,7 +206,7 @@ export async function listCalls(limit = 100): Promise<CallLogRow[]> {
   if (!db) return [];
   await ensureSchema(db);
   return db<CallLogRow[]>`
-    SELECT id, source_id, method, path, status, response_body, duration_ms, error, created_at
+    SELECT id, actor, source_id, method, path, status, response_body, duration_ms, error, created_at
       FROM call_log
      ORDER BY id DESC
      LIMIT ${limit}
