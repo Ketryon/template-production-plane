@@ -6,6 +6,6 @@ next-env.d.ts
 tsconfig.tsbuildinfo
 
 # Legacy local SQLite store. The call log lives in Postgres now, but an older
-# checkout may still have this file — and older versions of it held Fortnox
+# Never commit a local store — older shapes of this file held vendor tokens.
 # tokens, so it must never be committed.
 .data

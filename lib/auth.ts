@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 /**
- * Authentication, borrowed from the observed system exactly as the the vendor token is.
+ * Authentication, borrowed from the observed system exactly as the vendor token is.
  *
  * This plane keeps no user list. It authenticates against the observed system's own Supabase
  * project with the ANON key and gates on `ADMIN_TABLE.ADMIN_COLUMN = 'admin'` —

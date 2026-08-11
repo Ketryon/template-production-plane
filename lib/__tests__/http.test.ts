@@ -181,7 +181,7 @@ describe("normalisePath", () => {
 describe("toCurl", () => {
   it("never interpolates a real token", () => {
     const curl = toCurl("GET", "/3/customers");
-    expect(curl).toContain("$FORTNOX_TOKEN");
+    expect(curl).toContain("$VENDOR_TOKEN");
     expect(curl).toContain(`'${BASE_URL}/3/customers'`);
   });
 

@@ -10,7 +10,7 @@ import { reserveSlot } from "./rate-budget";
  * One executor means one place where auth, the 401 recovery, timing and logging
  * happen, so the history log is a complete record of what this tool has sent.
  *
- * THIS APP IS READ-ONLY AGAINST FORTNOX, and this function is where that is
+ * THIS APP IS READ-ONLY AGAINST THE VENDOR, and this function is where that is
  * true rather than merely intended. It borrows the observed system's production access
  * token, so there is no version of "arm it and write" that would be safe — the
  * guard below is absolute and has no toggle.
@@ -185,7 +185,7 @@ export async function callVendor(input: CallInput): Promise<CallResult> {
 }
 
 /**
- * Pull a readable message out of a the vendor error payload.
+ * Pull a readable message out of a vendor error payload.
  *
  * the vendor is inconsistent about casing and nesting across its API generations —
  * `ErrorInformation.Message` on /3, lowercase `message` elsewhere, sometimes a

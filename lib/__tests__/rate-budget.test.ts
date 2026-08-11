@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  FORTNOX_LIMIT_PER_WINDOW,
-  FORTNOX_WINDOW_MS,
-  LAB_LIMIT_PER_WINDOW,
+  VENDOR_LIMIT_PER_WINDOW,
+  VENDOR_WINDOW_MS,
+  PLANE_LIMIT_PER_WINDOW,
   __resetBudget,
   estimateSeconds,
   reserveSlot,
@@ -28,24 +28,24 @@ describe("the budget is a real fraction of the vendor's", () => {
   it("stays well under the documented tenant limit", () => {
     // 300/min, enforced as 25 per 5s sliding window. Taking the whole thing
     // would leave production nothing.
-    expect(FORTNOX_LIMIT_PER_WINDOW).toBe(25);
-    expect(FORTNOX_WINDOW_MS).toBe(5_000);
-    expect(LAB_LIMIT_PER_WINDOW).toBeLessThanOrEqual(FORTNOX_LIMIT_PER_WINDOW / 4);
+    expect(VENDOR_LIMIT_PER_WINDOW).toBe(25);
+    expect(VENDOR_WINDOW_MS).toBe(5_000);
+    expect(PLANE_LIMIT_PER_WINDOW).toBeLessThanOrEqual(VENDOR_LIMIT_PER_WINDOW / 4);
   });
 
   it("still allows useful work", () => {
     // A budget of 1 would make the tool unusable, which is its own failure.
-    expect(LAB_LIMIT_PER_WINDOW).toBeGreaterThan(1);
+    expect(PLANE_LIMIT_PER_WINDOW).toBeGreaterThan(1);
   });
 });
 
 describe("reserveSlot", () => {
   it("admits calls up to the limit without waiting", async () => {
     const now = 1_000_000;
-    for (let i = 0; i < LAB_LIMIT_PER_WINDOW; i++) {
+    for (let i = 0; i < PLANE_LIMIT_PER_WINDOW; i++) {
       await reserveSlot(() => now);
     }
-    expect(windowUsage(now).used).toBe(LAB_LIMIT_PER_WINDOW);
+    expect(windowUsage(now).used).toBe(PLANE_LIMIT_PER_WINDOW);
   });
 
   it("counts calls made at different moments inside the window", async () => {
@@ -59,11 +59,11 @@ describe("reserveSlot", () => {
 
   it("forgets calls once they age out of the window", async () => {
     const now = 1_000_000;
-    for (let i = 0; i < LAB_LIMIT_PER_WINDOW; i++) await reserveSlot(() => now);
-    expect(windowUsage(now).used).toBe(LAB_LIMIT_PER_WINDOW);
+    for (let i = 0; i < PLANE_LIMIT_PER_WINDOW; i++) await reserveSlot(() => now);
+    expect(windowUsage(now).used).toBe(PLANE_LIMIT_PER_WINDOW);
 
     // One millisecond past the window, every slot is free again.
-    expect(windowUsage(now + FORTNOX_WINDOW_MS + 1).used).toBe(0);
+    expect(windowUsage(now + VENDOR_WINDOW_MS + 1).used).toBe(0);
   });
 
   it("uses a sliding window, not a fixed bucket", async () => {
@@ -72,11 +72,11 @@ describe("reserveSlot", () => {
     // rate across the seam, which is exactly what the vendor's own sliding
     // window is built to catch.
     const now = 1_000_000;
-    for (let i = 0; i < LAB_LIMIT_PER_WINDOW; i++) await reserveSlot(() => now);
+    for (let i = 0; i < PLANE_LIMIT_PER_WINDOW; i++) await reserveSlot(() => now);
 
     // Halfway through the window, nothing has expired yet.
-    const midway = now + FORTNOX_WINDOW_MS / 2;
-    expect(windowUsage(midway).used).toBe(LAB_LIMIT_PER_WINDOW);
+    const midway = now + VENDOR_WINDOW_MS / 2;
+    expect(windowUsage(midway).used).toBe(PLANE_LIMIT_PER_WINDOW);
   });
 
   it("expires the oldest call first", async () => {
@@ -85,14 +85,14 @@ describe("reserveSlot", () => {
     await reserveSlot(() => now + 2_000);  // t + 2s
 
     // At t + 5.001s the first has aged out and the second has not.
-    expect(windowUsage(now + FORTNOX_WINDOW_MS + 1).used).toBe(1);
+    expect(windowUsage(now + VENDOR_WINDOW_MS + 1).used).toBe(1);
   });
 });
 
 describe("estimateSeconds", () => {
   it("is zero for a run that fits in one window", () => {
     expect(estimateSeconds(1)).toBe(0);
-    expect(estimateSeconds(LAB_LIMIT_PER_WINDOW)).toBe(0);
+    expect(estimateSeconds(PLANE_LIMIT_PER_WINDOW)).toBe(0);
   });
 
   it("grows with the number of calls", () => {

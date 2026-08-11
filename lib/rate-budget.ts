@@ -20,8 +20,8 @@
  */
 
 /** the vendor's actual limit, for reference in errors and the UI. */
-export const FORTNOX_WINDOW_MS = 5_000;
-export const FORTNOX_LIMIT_PER_WINDOW = 25;
+export const VENDOR_WINDOW_MS = 5_000;
+export const VENDOR_LIMIT_PER_WINDOW = 25;
 
 /**
  * What the lab allows itself: 5 of the vendor's 25 per 5 seconds — 20%, leaving
@@ -30,7 +30,7 @@ export const FORTNOX_LIMIT_PER_WINDOW = 25;
  * burst, which is the trade this whole module is making: slower here, so that
  * nothing gets slower there.
  */
-export const LAB_LIMIT_PER_WINDOW = 5;
+export const PLANE_LIMIT_PER_WINDOW = 5;
 
 /**
  * Timestamps of recent calls, oldest first. A sliding window rather than a
@@ -44,7 +44,7 @@ let recent: number[] = [];
 let tail: Promise<void> = Promise.resolve();
 
 function prune(now: number): void {
-  const cutoff = now - FORTNOX_WINDOW_MS;
+  const cutoff = now - VENDOR_WINDOW_MS;
   // Oldest-first, so dropping from the front is enough.
   let i = 0;
   while (i < recent.length && recent[i] <= cutoff) i++;
@@ -54,9 +54,9 @@ function prune(now: number): void {
 /** Milliseconds until a slot frees up, or 0 if one is free now. */
 function waitFor(now: number): number {
   prune(now);
-  if (recent.length < LAB_LIMIT_PER_WINDOW) return 0;
+  if (recent.length < PLANE_LIMIT_PER_WINDOW) return 0;
   // The oldest call in the window is the one whose expiry frees a slot.
-  return recent[0] + FORTNOX_WINDOW_MS - now + 1;
+  return recent[0] + VENDOR_WINDOW_MS - now + 1;
 }
 
 /**
@@ -87,7 +87,7 @@ export function windowUsage(now: number = Date.now()): {
   limit: number;
 } {
   prune(now);
-  return { used: recent.length, limit: LAB_LIMIT_PER_WINDOW };
+  return { used: recent.length, limit: PLANE_LIMIT_PER_WINDOW };
 }
 
 /**
@@ -96,10 +96,10 @@ export function windowUsage(now: number = Date.now()): {
  * discover it.
  */
 export function estimateSeconds(calls: number): number {
-  if (calls <= LAB_LIMIT_PER_WINDOW) return 0;
+  if (calls <= PLANE_LIMIT_PER_WINDOW) return 0;
   return Math.round(
-    ((calls - LAB_LIMIT_PER_WINDOW) / LAB_LIMIT_PER_WINDOW) *
-      (FORTNOX_WINDOW_MS / 1000),
+    ((calls - PLANE_LIMIT_PER_WINDOW) / PLANE_LIMIT_PER_WINDOW) *
+      (VENDOR_WINDOW_MS / 1000),
   );
 }
 

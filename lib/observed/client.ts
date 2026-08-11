@@ -1,10 +1,10 @@
 import postgres from "postgres";
 
 /**
- * Read-only connection to a the observed system-shaped Postgres database.
+ * Read-only connection to the observed system's Postgres database.
  *
  * This is the ONE module that knows the observed system exists. With no connection string
- * configured the app is exactly what it was before: a the vendor playground.
+ * configured the app is exactly what it was before: a plain vendor console.
  *
  * Read-only is enforced by the DATABASE, not by this code. The connection uses a
  * role holding SELECT on seven tables and nothing else — verified against

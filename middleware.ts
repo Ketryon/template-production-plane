@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 /**
- * Gate the entire app behind a the observed system admin session.
+ * Gate the entire app behind an admin session on the observed system.
  *
  * This is deny-by-default: everything except the login flow and static assets
  * requires a session. That ordering matters — an allow-list of protected routes

@@ -24,7 +24,7 @@ import { getObservedSql } from "./client";
  */
 
 export interface ObservedSource {
-  /** The the observed system legal entity id. */
+  /** The observed system's entity id. */
   id: string;
   label: string;
   /** Expiry of the access token the observed system currently holds. */
@@ -51,7 +51,7 @@ export async function listSources(): Promise<ObservedSource[]> {
     }));
   } catch {
     // A data source configured without SELECT on vendor_token is a valid
-    // setup — the reconcile checks still work. Only the the vendor half goes dark.
+    // setup — the reconcile checks still work. Only the vendor half goes dark.
     return [];
   }
 }

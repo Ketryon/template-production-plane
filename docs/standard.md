@@ -115,50 +115,42 @@ there was no weaker scope to downscope to. That is `constrained`, not `fail`:
 4. **What would change the verdict.** Here: the vendor introducing read-only
    scopes.
 
-### Rule 4 is partial, and stayed partial after the rotation
+### Worked example — recording a `partial` rule
 
-The rule has three clauses. Two are met:
+Also from that plane, because `partial` gets misused as "nearly done" when it
+should mean "name exactly which clauses are unmet".
 
-- **Rotatable** — demonstrated on 2026-08-11, not merely asserted. Both roles
-  were rotated: `fortnox_lab_readonly` on the observed system's database and
-  `fortnox_lab_app` on this plane's own. The the observed system rotation ran with a rollback
-  path — the old session held open, since a role's existing sessions survive its
-  password changing — and reverted automatically if the new credential failed to
-  authenticate or came back with different privileges. It did neither: ten
-  `SELECT` grants, writes still denied, the borrowed token still readable, a live
-  the vendor call still returning 200.
-- **Blast radius written down** — phase 0, and the README's Blast radius section.
+Rule 4 has three clauses. Two were met: the credentials were demonstrably
+**rotatable** (rotated, with a rollback path — the old session held open, since a
+role's existing sessions survive its password changing, reverting automatically
+if the new credential failed to authenticate or came back with different
+privileges), and the **blast radius was written down**.
 
-**Short-lived is not met, and marking this `pass` would be exactly the
-self-flattery this document warns about.** Both credentials are static passwords
-with no expiry. Rotating one by hand is not the same property as a credential
-that expires on its own, which is what Zero Standing Privilege actually asks for
-— just enough access, just in time, *time-bound*. One rotation resets the clock;
-it does not start one.
+**Short-lived was not met**, and the rule stayed `partial` rather than being
+marked `pass` when the rotation landed. Both credentials were static passwords
+with no expiry, and rotating one by hand is not the same property as a credential
+that expires on its own — which is what zero standing privilege actually asks
+for. One rotation resets the clock; it does not start one.
 
-What would close it, in ascending cost:
+Closing it costs, in ascending order: a written rotation cadence with a reminder
+(cheapest, and most of the value at two credentials), or dynamic short-lived
+credentials from a broker (the real answer, disproportionate for a single plane,
+worth revisiting at three or four).
 
-- **A written rotation cadence** with a calendar reminder. Cheapest, and honestly
-  most of the value for a two-credential tool.
-- **Dynamic secrets** — a broker issuing short-lived per-connection credentials
-  with a TTL, so a leak expires on its own and is attributable. This is the real
-  answer to the rule, and it is disproportionate for one lab and two roles. Worth
-  it if a third and fourth tool appear that need the same treatment.
-
-Recorded here rather than actioned, because picking one is a risk-appetite
-decision rather than an engineering one.
+The point is the discipline: **do not upgrade a verdict because the task that was
+outstanding got done.** Check every clause.
 
 ### Where each rule lives
 
 | Rule | File |
 | ---- | ---- |
 | 1, 9 | [`lib/auth.ts`](../lib/auth.ts), [`middleware.ts`](../middleware.ts) |
-| 2, 3, 4 | [`lib/worknode/sources.ts`](../lib/worknode/sources.ts), [`migrations/worknode/`](../migrations/worknode) |
-| 5 | [`migrations/worknode/…_readonly_role.sql`](../migrations/worknode/20260807180000_readonly_role.sql) for the observed system's database and [`migrations/lab/…_least_privilege_app_role.sql`](../migrations/lab/20260811150000_least_privilege_app_role.sql) for our own. Both are grants, applied by hand. Deliberately not enforced by any code in this repo. |
+| 2, 3, 4 | [`lib/observed/sources.ts`](../lib/observed/sources.ts), [`migrations/observed/`](../migrations/observed) |
+| 5 | [`migrations/observed/`](../migrations/observed) for the observed system's database and [`migrations/own/`](../migrations/own) for this plane's store. Both are grants, applied by hand. Deliberately not enforced by any code in this repo. |
 | 6 | `isSideEffecting` in [`lib/http.ts`](../lib/http.ts), pinned by [`lib/__tests__/http.test.ts`](../lib/__tests__/http.test.ts) |
 | 7 | [`app/api/call/route.ts`](../app/api/call/route.ts) |
 | 8 | `RETENTION_DAYS` and `sweepExpired` in [`lib/store.ts`](../lib/store.ts) |
-| 10 | [`lib/rate-budget.ts`](../lib/rate-budget.ts), the 429 branch in [`lib/proxy.ts`](../lib/proxy.ts), `MAX_PAGES` in [`lib/worknode/checks.ts`](../lib/worknode/checks.ts) |
+| 10 | [`lib/rate-budget.ts`](../lib/rate-budget.ts), the 429 branch in [`lib/proxy.ts`](../lib/proxy.ts), and the page ceiling on any paginated sweep you add |
 
 ---
 

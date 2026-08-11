@@ -79,7 +79,7 @@ export function normalisePath(path: string): string {
   const trimmed = path.trim();
   if (!trimmed) throw new Error("Path is required, e.g. /3/customers");
   // Accept a pasted absolute URL as well as a bare path — you will paste both
-  // straight out of the the vendor docs, and having one silently 404 is friction
+  // straight out of the vendor's docs, and having one silently 404 is friction
   // for no reason.
   if (trimmed.startsWith(BASE_URL)) return trimmed.slice(BASE_URL.length);
   if (!trimmed.startsWith("/")) return `/${trimmed}`;
@@ -89,7 +89,7 @@ export function normalisePath(path: string): string {
 /**
  * Reproduce a call outside the app.
  *
- * The token is never interpolated — you get a $FORTNOX_TOKEN placeholder — so a
+ * The token is never interpolated — you get a $VENDOR_TOKEN placeholder — so a
  * curl command pasted into a chat or an issue is not a credential leak.
  *
  * There is no `body` parameter. It used to take one, left over from when this
@@ -102,7 +102,7 @@ export function normalisePath(path: string): string {
 export function toCurl(method: string, path: string): string {
   return [
     `curl -X ${method} '${BASE_URL}${path}'`,
-    `  -H "Authorization: Bearer $FORTNOX_TOKEN"`,
+    `  -H "Authorization: Bearer $VENDOR_TOKEN"`,
     `  -H 'Accept: application/json'`,
   ].join(" \\\n");
 }
