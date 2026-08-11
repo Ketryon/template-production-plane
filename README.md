@@ -14,6 +14,9 @@ and neither can be checked against the other from inside either one.
 
 Read [`docs/standard.md`](docs/standard.md) before changing anything under
 `lib/`. It is the whole point of this template; the code is downstream of it.
+[`AUDIT.md`](AUDIT.md) records what was checked when this was extracted, what was
+left open on purpose, and the cheapest way to tell whether the guard still
+guards.
 
 ---
 
