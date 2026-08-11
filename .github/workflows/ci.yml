@@ -1,0 +1,48 @@
+name: CI
+
+# Typecheck, lint and test on every pull request and every push to main.
+#
+# The load-bearing job here is `pnpm test`. lib/http.ts's SIDE_EFFECTING_SEGMENTS
+# is what stops this lab mailing a live invoice to a real customer using
+# the observed system's production credentials, and lib/__tests__/http.test.ts asserts its
+# exact contents — so dropping a segment fails here rather than in production.
+# See docs/standard.md, phase 1.
+#
+# This workflow must not be deleted "pending a rewrite". If it needs replacing,
+# the replacement lands in the same commit.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # No `version:` — v6 resolves pnpm from package.json's packageManager
+      # field, which is now the single place the version is declared.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      - run: pnpm lint
+
+      - run: pnpm test
