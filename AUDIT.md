@@ -67,7 +67,30 @@ example in `docs/standard.md` warns against.
 
 ---
 
-## Fixed in this pass
+## Fixed in a second pass — found by actually using the template
+
+### Filling in the guard broke sixteen tests
+
+The first audit fixed `rate-budget.test.ts` for hardcoding one vendor's published
+limits, and did not check whether the guard's test had the same defect. It did,
+in three places: a literal expected list, a hand-written parallel table of
+`[segment, example path]` pairs, and a cross-check between the two.
+
+Step 2 of the README instructs a new plane to fill in `SIDE_EFFECTING_SEGMENTS`.
+Doing so failed sixteen tests.
+
+Found by **copying the template and doing the fill-in exercise as a second plane
+would** — changing the vendor's rate limits, the guard list, the admin table and
+the token schema, then running `pnpm verify`. Reading the template had not found
+it, twice.
+
+The per-segment cases now derive from the guard's own list, and the exclusions
+use neutral paths. What deliberately remains duplicated is `EXPECTED_UNSAFE` —
+that second copy *is* the tripwire, and it is verified to fire in both directions
+in a filled-in plane: dropping a segment from the guard fails, and widening the
+guard without updating the list fails too.
+
+## Fixed in the first pass
 
 ### The template broke its own setup instructions
 

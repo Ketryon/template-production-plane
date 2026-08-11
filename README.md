@@ -29,7 +29,7 @@ observed system.
 | # | Where | What |
 |---|---|---|
 | 1 | `.env.example` → `.env.local` | Connection strings and keys |
-| 2 | `lib/http.ts` | `SIDE_EFFECTING_SEGMENTS` — **the most consequential edit here** |
+| 2 | `lib/http.ts` **and** `lib/__tests__/http.test.ts` | `SIDE_EFFECTING_SEGMENTS` and the `EXPECTED_UNSAFE` list that pins it — edit both, in lockstep. **The most consequential edit here** |
 | 3 | `lib/auth.ts` | `ADMIN_TABLE` / `ADMIN_COLUMN` for the observed system's own admin flag |
 | 4 | `lib/rate-budget.ts` | The vendor's documented limit, and your fraction of it |
 | 5 | `lib/observed/sources.ts` | The table and columns holding the borrowed vendor token |
@@ -58,7 +58,11 @@ it.
 - **`app/(app)/layout.tsx`** — the admin check. Middleware answers *"are you
   logged in"*, cheaply, per request; this answers *"are you allowed"*, once per
   render. Neither alone is sufficient.
-- **`lib/http.ts`** — the guard. Its *list* is yours; its *shape* is not.
+- **`lib/http.ts`** — the guard. Its *list* is yours; its *shape* is not. The
+  test's `EXPECTED_UNSAFE` is deliberately a second copy that must be edited with
+  it: that duplication *is* the tripwire, and it is meant to be mildly annoying.
+  Everything else in that test derives from the guard's own list, so filling it
+  in costs you exactly one extra edit rather than sixteen broken tests.
 
 ## The five ideas
 
