@@ -10,7 +10,7 @@ import { createServerClient } from "@supabase/ssr";
  * production invoices, payouts and payslips.
  *
  * The middleware only checks that a SESSION exists. The admin check needs a
- * database read, which is the layout's job via `getLabUser()` — middleware runs
+ * database read, which is the layout's job via `getPlaneUser()` — middleware runs
  * on every request including static ones, and a query there would be a
  * per-asset round trip. So: middleware answers "are you logged in", the layout
  * answers "are you allowed".

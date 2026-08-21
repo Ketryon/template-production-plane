@@ -11,7 +11,7 @@ import {
 
 /**
  * The pacer is the only thing standing between an expensive reconcile run and
- * production's the vendor quota — the token is borrowed, so the allowance is
+ * production's vendor quota — the token is borrowed, so the allowance is
  * shared. the vendor sends no rate-limit headers, so this cannot be corrected
  * reactively: if the maths here is wrong, the first sign is the production
  * integration getting 429s.

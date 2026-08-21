@@ -4,7 +4,7 @@ import { BASE_URL, isSideEffecting, normalisePath } from "./http";
 import { reserveSlot } from "./rate-budget";
 
 /**
- * The single path every the vendor call in this app takes — the catalog operations,
+ * The single path every vendor call in this app takes — the catalog operations,
  * the reconcile checks and the console all come through here.
  *
  * One executor means one place where auth, the 401 recovery, timing and logging
@@ -45,10 +45,13 @@ export interface CallResult {
    * the vendor sends none (see lib/rate-budget.ts). These are the two that answer
    * real questions:
    *
+   * The header names below are the worked example's (Fortnox) — find your
+   * vendor's equivalents and keep the two questions, which are universal:
+   *
    *   upstreamMs  x-rack-responsetime — time spent inside the vendor, as opposed
    *               to durationMs, which includes the network. A slow call with a
    *               fast upstreamMs is our problem, not theirs.
-   *   requestId   x-uid — quote this at the vendor support. Without it a support
+   *   requestId   x-uid — quote this at vendor support. Without it a support
    *               thread starts with "which request?".
    */
   upstreamMs: number | null;
@@ -60,9 +63,9 @@ export interface CallResult {
 export class ReadOnlyError extends Error {
   constructor(path: string) {
     super(
-      `Refused: "${path}" is not a read. This lab observes the observed system's the vendor ` +
-        `integration using the observed system's own production credentials, so it only ever ` +
-        `issues reads. the vendor's send and bookkeep endpoints are GET but still ` +
+      `Refused: "${path}" is not a read. This plane observes the observed system's ` +
+        `vendor integration using that system's own production credentials, so it only ` +
+        `ever issues reads. Some vendor endpoints that send or post are GET but still ` +
         `dispatch, which is why this check looks at the path and not the method.`,
     );
     this.name = "ReadOnlyError";
@@ -70,19 +73,20 @@ export class ReadOnlyError extends Error {
 }
 
 /**
- * Execute one the vendor read.
+ * Execute one vendor read.
  *
- * Every outcome — success, the vendor error, thrown failure — is written to the
+ * Every outcome — success, vendor error, thrown failure — is written to the
  * call log before returning. A failed call is exactly the one worth finding
  * again later, so the log must not be success-only.
  */
 export async function callVendor(input: CallInput): Promise<CallResult> {
   const path = normalisePath(input.path);
 
-  // The one invariant. `isSideEffecting` keys on the PATH because the vendor's
-  // /email, /einvoice, /eprint and /bookkeep endpoints are GET yet dispatch to
-  // real customers — a method-based check would have a hole big enough to mail
-  // an invoice through. Everything is issued as GET below regardless.
+  // The one invariant. `isSideEffecting` keys on the PATH because some vendor
+  // endpoints are GET yet dispatch to real customers — in the worked example
+  // /email, /einvoice, /eprint and /bookkeep. A method-based check would have a
+  // hole big enough to mail an invoice through. Everything is issued as GET
+  // below regardless.
   if (isSideEffecting("GET", path)) {
     throw new ReadOnlyError(path);
   }
@@ -95,7 +99,7 @@ export async function callVendor(input: CallInput): Promise<CallResult> {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        // the vendor keys error-message formatting off Accept, including on binary
+        // The vendor may key error-message formatting off Accept, including on binary
         // endpoints like /preview, so it is always application/json here.
         Accept: "application/json",
       },
@@ -111,7 +115,7 @@ export async function callVendor(input: CallInput): Promise<CallResult> {
   let rateLimited = false;
 
   try {
-    // Wait for the lab's share of the vendor's tenant-wide quota before sending.
+    // Wait for this plane's share of the vendor's tenant-wide quota before sending.
     // The token is production's, so the allowance is production's too.
     await reserveSlot();
 
@@ -144,8 +148,8 @@ export async function callVendor(input: CallInput): Promise<CallResult> {
       rateLimited = true;
       const retryAfter = response.headers.get("retry-after");
       error =
-        `the vendor rate limit reached (429)${retryAfter ? `, retry after ${retryAfter}s` : ""}. ` +
-        `This quota is shared with the production integration — the lab does not retry, ` +
+        `Vendor rate limit reached (429)${retryAfter ? `, retry after ${retryAfter}s` : ""}. ` +
+        `This quota is shared with the production integration — this plane does not retry, ` +
         `because retrying now competes with whatever exhausted it. Try again shortly.`;
     }
 
@@ -197,10 +201,11 @@ export async function callVendor(input: CallInput): Promise<CallResult> {
 /**
  * Pull a readable message out of a vendor error payload.
  *
- * the vendor is inconsistent about casing and nesting across its API generations —
- * `ErrorInformation.Message` on /3, lowercase `message` elsewhere, sometimes a
- * bare `error` string. Surfacing the wrong one leaves you staring at "Unknown
- * error" while the real cause sits two keys away in the response viewer.
+ * Vendors are routinely inconsistent about casing and nesting across their API
+ * generations. In the worked example: `ErrorInformation.Message` on /3,
+ * lowercase `message` elsewhere, sometimes a bare `error` string. Surfacing the
+ * wrong one leaves you staring at "Unknown error" while the real cause sits two
+ * keys away in the response viewer.
  */
 function describeVendorError(payload: unknown, status: number): string {
   if (typeof payload === "string" && payload.trim()) return payload.trim();
@@ -233,5 +238,5 @@ function describeVendorError(payload: unknown, status: number): string {
 
   if (message && code) return `${code}: ${message}`;
   if (message) return message;
-  return `the vendor returned HTTP ${status}`;
+  return `Vendor returned HTTP ${status}`;
 }

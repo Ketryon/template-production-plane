@@ -99,7 +99,7 @@ function ensureSchema(db: postgres.Sql): Promise<void> {
       // insufficient_privilege. Expected, and fine: it means the app is running
       // as the least-privilege role, which holds INSERT/SELECT/DELETE on
       // call_log and no CREATE — so the schema is owned by
-      // migrations/lab/ rather than bootstrapped here, which is the intended
+      // migrations/own/ rather than bootstrapped here, which is the intended
       // end state. Anything else is a real failure and propagates.
       if ((error as { code?: string })?.code !== "42501") throw error;
     }
@@ -146,7 +146,8 @@ async function createSchema(db: postgres.Sql): Promise<void> {
  * long-lived instance that would sweep at boot and then never again. An hourly
  * check makes the guarantee real instead of incidental.
  *
- * The index this relies on is migrations/lab/20260811134500_call_log_retention.sql.
+ * The index this relies on is idx_call_log_created_at, in
+ * migrations/own/20260101000000_call_log.sql.
  * Without it the DELETE still works, just as a sequential scan.
  */
 async function sweepExpired(db: postgres.Sql): Promise<void> {
@@ -165,7 +166,7 @@ async function sweepExpired(db: postgres.Sql): Promise<void> {
     }
   } catch (error) {
     // Same reasoning as recordCall's catch: retention failing must not turn a
-    // successful the vendor read into an error. It will be retried in an hour.
+    // successful vendor read into an error. It will be retried in an hour.
     console.error("[store] retention sweep failed:", error);
   }
 }
@@ -196,7 +197,7 @@ export async function recordCall(entry: {
     await sweepExpired(db);
   } catch (error) {
     // Logging is observability, not the job. A log-write failure must never turn
-    // a successful the vendor read into an error the caller sees.
+    // a successful vendor read into an error the caller sees.
     console.error("[store] failed to record call:", error);
   }
 }

@@ -157,7 +157,7 @@ describe("normalisePath", () => {
     expect(normalisePath("v1/customers")).toBe("/v1/customers");
   });
 
-  it("strips an absolute the vendor URL pasted from the docs", () => {
+  it("strips an absolute vendor URL pasted from the docs", () => {
     expect(normalisePath(`${BASE_URL}/v1/customers`)).toBe("/v1/customers");
   });
 

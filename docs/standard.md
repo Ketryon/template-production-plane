@@ -48,8 +48,9 @@ Rule 3 is worth internalising beyond the citation. A tool that holds
 production's authority and applies it to caller-supplied input **is a confused
 deputy** — it conflates the authority to act with the designation of what to act
 on. That framing tells you exactly what to review: every place caller input
-meets borrowed authority. In this app that is two places, `path` in
-`/api/call` and `checkId`/`sourceId` in `/api/reconcile`, and nothing else.
+meets borrowed authority. In this template that is one place — `sourceId` and
+`path` in `/api/call` — and nothing else. Every surface you add is another, so
+keep the list in this section current as you build.
 
 ---
 
@@ -197,7 +198,7 @@ missing privilege.
 
 ### 4. Bound the resource
 
-A borrowed credential shares the source's quota. Set `LAB_LIMIT_PER_WINDOW` in
+A borrowed credential shares the source's quota. Set `PLANE_LIMIT_PER_WINDOW` in
 `lib/rate-budget.ts` to a small fraction of the vendor's documented limit, cap
 paginated sweeps, and declare each expensive operation's call count in the UI
 *before* it runs.

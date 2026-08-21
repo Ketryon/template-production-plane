@@ -17,7 +17,7 @@ import postgres from "postgres";
  * Do not reintroduce one: the whole point is that a leak of this credential
  * cannot alter the ledger or reach a secret.
  *
- * Setup lives in the README ("the observed system data source"), including the role SQL.
+ * Setup lives in the README ("observed-system data source"), including the role SQL.
  */
 
 let client: postgres.Sql | undefined;
@@ -61,7 +61,7 @@ export function requireObservedSql(): postgres.Sql {
   const sql = getObservedSql();
   if (!sql) {
     throw new ObservedQueryError(
-      "No the observed system data source configured. Set OBSERVED_DATABASE_URL in .env.local.",
+      "No observed-system data source configured. Set OBSERVED_DATABASE_URL in .env.local.",
     );
   }
   return sql;
