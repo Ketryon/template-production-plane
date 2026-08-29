@@ -2,7 +2,7 @@
   "name": "template-production-plane",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.12.1",
+  "packageManager": "pnpm@10.34.5",
   "description": "A read-only production plane — a separate app that observes production and cannot change it.",
   "scripts": {
     "dev": "next dev --turbopack",
