@@ -28,7 +28,7 @@ jobs:
     name: Typecheck, lint, test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # No `version:` — v6 resolves pnpm from package.json's packageManager
       # field, which is now the single place the version is declared.
